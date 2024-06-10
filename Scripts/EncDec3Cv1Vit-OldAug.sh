@@ -1,0 +1,3 @@
+python PipelineScripts.py --encoder EncoderCvCvCvVit@2@24  --mixer MixerMaxRes7@3  --batchSize 12 --initLr 0.001 --epochs 81 --resumeTrain 0 --config PF64-PF50-2GPUs-OldAug
+python PipelineScripts.py --encoder EncoderCbbCbbCbbVit@2@24  --mixer MixerMaxRes7@3  --batchSize 12 --initLr 0.001 --epochs 81 --resumeTrain 0 --config PF64-PF50-2GPUs-OldAug
+python PipelineScripts.py --encoder EncoderCbnCbnCbnVit@2@24  --mixer MixerMaxRes7@3  --batchSize 12 --initLr 0.001 --epochs 81 --resumeTrain 0 --config PF64-PF50-2GPUs-OldAug

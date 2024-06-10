@@ -1,0 +1,23 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "env":{
+                "CUDA_VISIBLE_DEVICES":"1"
+            },
+            "justMyCode": true,
+            //"args": "--encoder EncoderCvCvCvCvCv  --mixer MixerMaxRes3@5 --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config PF64-PF50-2GPUs --skipTest True"
+            //"args": "--encoder EncoderCvCvCvCvCv  --mixer MixerMaxRes7@3DirectDownsample --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config debug --skipTest True"
+            "args": "--encoder EncoderCvCvCvVit@2@24  --decoder DecoderCvCvCvVit@2@3  --mixer MixerMaxRes7@3 --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config debug"
+
+        }
+    ],
+}
