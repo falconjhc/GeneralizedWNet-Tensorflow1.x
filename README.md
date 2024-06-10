@@ -14,3 +14,6 @@ decoder: in default the decoder will be constructed with the symmetrical archite
 mixer: 
     Smp: simple mixer
     Res@A@B: residual mixer with A blocks at B stage
+
+
+skipTest=True: no full-set testing during the training
