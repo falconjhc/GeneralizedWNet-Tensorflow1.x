@@ -70,7 +70,7 @@ hyperParams = {
         # optimizer setting
         'optimization_method':'adam',
         'initTrainEpochs':0,
-        'final_learning_rate_pctg': 0.01,
+        'final_learning_rate_pctg': 0.30,
 
         # feature extractor parametrers
         'true_fake_target_extractor_dir': [],
