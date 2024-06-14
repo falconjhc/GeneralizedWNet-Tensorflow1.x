@@ -1,0 +1,18 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: linux-64
+cudatoolkit=11.0.3
+cudnn=8.0.5.39
+easydict=1.13
+imageio=2.9.0
+keras-preprocessing=1.1.2
+matplotlib=3.3.4
+numpy=1.19.5
+opencv3=3.1.0
+pillow=8.3.2
+prettytable=2.5.0
+python=3.6.15
+scipy=1.5.3
+six=1.15.0
+tensorflow-gpu=2.4.0
+tk=8.6.12
