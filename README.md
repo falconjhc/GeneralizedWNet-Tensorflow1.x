@@ -22,6 +22,7 @@ skipTest=True: no full-set testing during the training
 Relevant paper can be found:
 
     Generalized W-Net: Arbitrary-style Chinese Character Synthesization https://arxiv.org/abs/2406.06847
+    
     W-Net: One-Shot Arbitrary-Style Chinese Character Generation with Deep Neural Networks https://arxiv.org/abs/2406.06122
 
 To cite them:
@@ -34,7 +35,7 @@ To cite them:
     year={2018},
     organization={Springer}
     }
-    
+
     @inproceedings{jiang2023generalized,
     title={Generalized W-Net: Arbitrary-Style Chinese Character Synthesization},
     author={Jiang, Haochuan and Yang, Guanyu and Cheng, Fei and Huang, Kaizhu},
