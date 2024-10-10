@@ -14,9 +14,9 @@
                 "CUDA_VISIBLE_DEVICES":"1"
             },
             "justMyCode": true,
-            //"args": "--encoder EncoderCvCvCvCvCv  --mixer MixerMaxRes3@5 --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config PF64-PF50-2GPUs --skipTest True"
-            //"args": "--encoder EncoderCvCvCvCvCv  --mixer MixerMaxRes7@3DirectDownsample --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config debug --skipTest True"
-            "args": "--encoder EncoderCvCvCvVit@2@24  --decoder DecoderCvCvCvVit@2@3  --mixer MixerMaxRes7@3 --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config debug"
+            //"args": "--encoder EncoderCvCvCvCvCv  --mixer MixerMaxRes3@5 --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 1 --config PF64-PF50-1GPU --skipTest True"
+            "args": "--encoder EncoderCbbCbbCbbCbb  --mixer MixerMaxRes7@3DirectDownsample --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config debug --skipTest True"
+            //"args": "--encoder EncoderVit@2@3CbnCvCv  --decoder DecoderCvCbnCvVit@2@3   --mixer MixerMaxRes7@3 --batchSize 5 --initLr 0.001 --epochs 9 --resumeTrain 0 --config debug"
 
         }
     ],

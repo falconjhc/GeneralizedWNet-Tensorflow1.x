@@ -196,7 +196,8 @@ def DecodingBasicBlock(x, dims, blockCount, device, weightDecay, initializer,  i
     
     batchSize = int(x.shape[0])
     identity = x
-    deconv1 = deconv2d(x, sh=expanding, sw=expanding,
+    deconv1 = deconv2d(x, sh=expanding, sw=expanding, 
+                       kh=3, kw=3, ######
                         output_shape=[batchSize, 
                                         int(x.shape[1]*expanding), int(x.shape[2]*expanding), dims['MapC']],
                         scope="Block%d-DeConv1" % blockCount,
@@ -210,6 +211,7 @@ def DecodingBasicBlock(x, dims, blockCount, device, weightDecay, initializer,  i
     
     act1 = relu(bn1)
     deconv2 = deconv2d(act1, sh=1, sw=1,
+                       kh=3, kw=3, ######
                         output_shape=[batchSize, 
                                         int(x.shape[1]*expanding), int(x.shape[2]*expanding), dims['MapC']],
                         scope="Block%d-DeConv2" % blockCount,
@@ -221,6 +223,7 @@ def DecodingBasicBlock(x, dims, blockCount, device, weightDecay, initializer,  i
     
     if config['option']=='Cbb':
         identity = deconv2d(identity, sh=expanding, sw=expanding,
+                            kh=1, kw=1, ######
                         output_shape=[batchSize, 
                                         int(x.shape[1]*expanding), int(x.shape[2]*expanding), dims['MapC']],
                         scope="Block%d-ResDeConv" % blockCount,
@@ -295,6 +298,7 @@ def DecodingBottleneckBlock(x, dims, blockCount, device, weightDecay, initialize
     
     # if self.config.generator.decoder=='BottleneckDecoder':
     identity = deconv2d(identity, sh=expanding, sw=expanding,
+                        kh=1,kw=1,################
                     output_shape=[batchSize, 
                                     int(x.shape[1]*expanding), int(x.shape[2]*expanding), dims['MapC']],
                     scope="Block%d-ResDeConv" % blockCount,

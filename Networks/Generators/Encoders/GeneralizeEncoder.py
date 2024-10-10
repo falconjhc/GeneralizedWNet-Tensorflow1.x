@@ -36,10 +36,10 @@ BlockDict={'Cv': BasicBlock,
            'Cbn': BottleneckBlock,
            'Vit': VisionTransformerBlock}
 def FindKeys(dict, val): return list(value for key, value in dict.items() if key in val)
-# numHeads=[-1, 3,6,12,24]
-# depths=[-1, 2,2,2,2]
-numHeads=[-1, -1,-1,8,-1]
-depths=[-1, -1,-1,12,-1]
+numHeads=[-1, 3,6,12,24]
+depths=[-1, 2,2,2,2]
+# numHeads=[-1, -1,-1,8,-1]
+# depths=[-1, -1,-1,12,-1]
 
 print_separater="#########################################################"
 

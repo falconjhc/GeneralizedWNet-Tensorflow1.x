@@ -6,7 +6,7 @@ import re
 
 
 # WritingFileTrain='./TrainRecordsTestVitEncoder-20240517-Train.xlsx'
-# WritingFileValidate='./TrainRecordsTestVitEncoder-20240517-Validate.xlsx'
+# WritingFileValidate='./TrainRecordsTestVitEncoder-20240517-Test.xlsx'
 
 WritingFile='./TrainRecordsTestVitEncoder-20240517.xlsx'
 DelNames=['Exp20240517-ContentPF64-StylePF50-',

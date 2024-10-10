@@ -37,7 +37,12 @@ LABEL_LENGTH=6
 MaxStyleReferenceLossNum=16
 ContentInputNumberActual=0
 printInfoSec=15
-displayStyleNum = 8
+displayStyleNum = 5
+
+def ListToTxt(lines, path):
+    with open(path, 'w') as f:
+        for line in lines:
+            f.write(f"{line}\n")
 
 
 GRAYSCALE_AVG = 127.5
@@ -225,22 +230,10 @@ class Dataset_Iterator(object):
             for jj in range(self.config.datasetConfig.displayStyleNum):
                 current_new_indices = rnd.sample(found_indices, len(found_indices))
                 for kk in range(len(found_indices)):
-                    self.style_reference_list[jj].data_list[found_indices[kk]] = \
-                        self.true_style.data_list[current_new_indices[kk]]
-                    self.style_reference_list[jj].label0_list[found_indices[kk]] = \
-                        self.true_style.label0_list[current_new_indices[kk]]
-                    self.style_reference_list[jj].label1_list[found_indices[kk]] = \
-                        self.true_style.label1_list[current_new_indices[kk]]
+                    self.style_reference_list[jj].data_list[found_indices[kk]] =  self.true_style.data_list[current_new_indices[kk]]
+                    self.style_reference_list[jj].label0_list[found_indices[kk]] =  self.true_style.label0_list[current_new_indices[kk]]
+                    self.style_reference_list[jj].label1_list[found_indices[kk]] =  self.true_style.label1_list[current_new_indices[kk]]
 
-            # for jj in range(len(self.loss_style_reference_list)):
-            #     current_new_indices = rnd.sample(found_indices, len(found_indices))
-            #     for kk in range(len(found_indices)):
-            #         self.loss_style_reference_list[jj].data_list[found_indices[kk]] = \
-            #             self.true_style.data_list[current_new_indices[kk]]
-            #         self.loss_style_reference_list[jj].label0_list[found_indices[kk]] = \
-            #             self.true_style.label0_list[current_new_indices[kk]]
-            #         self.loss_style_reference_list[jj].label1_list[found_indices[kk]] = \
-            #             self.true_style.label1_list[current_new_indices[kk]]
 
             label1_counter += 1
             print('%s:DatasetReInitialization@CurrentLabel1:%d/%d(Label1:%s);' % (info, label1_counter, len(label1_vec), label1), end="\r")
@@ -831,6 +824,7 @@ class DataProvider(object):
         self.content_label1_vec = np.unique(content_label1_list)
         self.content_label0_vec = np.unique(content_label0_list)
         self.content_input_num = len(np.unique(content_label1_list))
+        # self.content_input_num = len(np.unique(content_label0_list))
 
 
 

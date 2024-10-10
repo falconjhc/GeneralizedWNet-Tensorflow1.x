@@ -113,6 +113,7 @@ class Loss(object):
             categoryStyleOnGenerated = tf.reduce_mean(categoryStyleOnGenerated) * self.penalties.Generator_Categorical_Penalty
             
             io.sumLossG+=(categoryContentOnOrg+categoryContentOnGenerated+categoryStyleOnOrg+categoryContentOnGenerated)
+            io.lossG.sumLossG = io.sumLossG
             io.lossG.CategoryContentOnOrg=categoryContentOnOrg/self.penalties.Generator_Categorical_Penalty
             io.lossG.CategoryContentOnGenerated=categoryContentOnGenerated/self.penalties.Generator_Categorical_Penalty
             io.lossG.CategoryStyleOnOrg=categoryStyleOnOrg/self.penalties.Generator_Categorical_Penalty
@@ -173,7 +174,7 @@ class Loss(object):
                 mean_squared_feature_diff = tf.reduce_mean(squared_feature_diff,axis=[1,2,3])
                 square_root_mean_squared_feature_diff = tf.sqrt(eps+mean_squared_feature_diff)
                 this_feature_loss = tf.reduce_mean(square_root_mean_squared_feature_diff)
-                this_feature_loss = this_feature_loss * HighLevelFeaturePenaltyPctg[counter]
+                this_feature_loss = this_feature_loss * (HighLevelFeaturePenaltyPctg[counter]+eps)
 
                 feature1_normed = _featureLinearNorm(feature=feature1[counter])
                 feature2_normed = _featureLinearNorm(feature=feature2[counter])
@@ -181,7 +182,7 @@ class Loss(object):
                                    tf.multiply(feature1_normed, tf.log(feature2_normed)) +
                                    - feature1_normed + feature2_normed + eps)
                 vn_loss = tf.reduce_mean(vn_loss)
-                vn_loss = vn_loss * HighLevelFeaturePenaltyPctg[counter]
+                vn_loss = vn_loss * (HighLevelFeaturePenaltyPctg[counter]+eps)
 
                 if counter == 0:
                     final_loss_mse = this_feature_loss
@@ -189,8 +190,8 @@ class Loss(object):
                 else:
                     final_loss_mse += this_feature_loss
                     final_loss_vn += vn_loss
-            final_loss_mse = final_loss_mse / len(HighLevelFeaturePenaltyPctg)
-            final_loss_vn = final_loss_vn / len(HighLevelFeaturePenaltyPctg)
+            final_loss_mse = final_loss_mse / (sum(HighLevelFeaturePenaltyPctg)+eps)
+            final_loss_vn = final_loss_vn / (sum(HighLevelFeaturePenaltyPctg)+eps)
             return final_loss_mse, final_loss_vn
         
         
@@ -213,8 +214,8 @@ class Loss(object):
                                        feature2=featureExtractorIO.outputs.fakeContentFidFeature[ii])
             
             
-            contentMSE+=_mse*self.penalties.FeatureExtractorPenalty_ContentPrototype[ii]
-            contentVN+=_vn*self.penalties.FeatureExtractorPenalty_ContentPrototype[ii]
+            contentMSE+=_mse*(self.penalties.FeatureExtractorPenalty_ContentPrototype[ii]+eps)
+            contentVN+=_vn*(self.penalties.FeatureExtractorPenalty_ContentPrototype[ii]+eps)
             mseContentList.append(_mse)
             vnContentList.append(_vn)
             fidContentList.append(_contentFid)
@@ -247,9 +248,9 @@ class Loss(object):
             
         #io.sumLossFE+=contentMSE+contentVN+styleMSE+styleVN
         io.sumLossFE+=contentMSE+styleMSE
-        io.lossFE.content = (contentMSE+contentVN)/np.average(self.penalties.FeatureExtractorPenalty_ContentPrototype)
-        io.lossFE.style = (styleMSE+styleVN)/np.average(self.penalties.FeatureExtractorPenalty_StyleReference)
-        io.lossFE.mseContent=mseContentList
+        io.lossFE.content = (contentMSE+contentVN)/(np.sum(self.penalties.FeatureExtractorPenalty_ContentPrototype)+eps)
+        io.lossFE.style = (styleMSE+styleVN)/(np.sum(self.penalties.FeatureExtractorPenalty_StyleReference)+eps)
+        io.lossFE.mseContent=mseContentList 
         io.lossFE.vnContent=vnContentList
         io.lossFE.mseStyle=mseStyleList
         io.lossFE.vnStyle=vnStyleList

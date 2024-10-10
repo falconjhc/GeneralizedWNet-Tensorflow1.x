@@ -151,7 +151,7 @@ class ParameterSetting(object):
             return None
         
         self.config.expID = self.GenerateExpID(args.encoder, args.mixer, args.decoder)
-        self.config.trainModelDir = os.path.join(os.path.join(self.config.expDir, 'Models'), self.config.expID)
+        self.config.trainModelDir = os.path.join(os.path.join(self.config.expDir, 'Ckpts'), self.config.expID)
         self.config.trainLogDir = os.path.join(os.path.join(self.config.expDir, 'Logs'), self.config.expID)
         self.config.trainImageDir = os.path.join(os.path.join(self.config.expDir, 'Images'), self.config.expID)
         
@@ -194,14 +194,8 @@ class ParameterSetting(object):
         
         if self.config.content_prototype_extractor_dir:
             self.config.extractorContent = self.ProcessNetworks(self.config.content_prototype_extractor_dir)
-            # self.config.extractorContent=list()
-            # for dir in self.config.content_prototype_extractor_dir:
-            #     self.config.extractorContent.append(NetworkConfigObject(name='ContentPrototypeFeatureExtractor', 
-            #                                                             path=dir.split('@')[0], 
-            #                                                             device=dir.split('@')[1]))
             
         if self.config.style_reference_extractor_dir:
-            
             self.config.extractorStyle = self.ProcessNetworks(self.config.style_reference_extractor_dir)
         self.config.pop('featureExtractorDevice', None)
         self.config.pop('true_fake_target_extractor_dir', None)

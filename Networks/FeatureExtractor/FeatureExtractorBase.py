@@ -84,7 +84,7 @@ class FeatureExtractor():
         self.IO=NetworkIO()
         
             
-        if self.config.extractorContent:
+        if 'extractorContent' in self.config:
             self.contentExtractors = list()
             for _model in self.config.extractorContent:
                 _currentInit = NetworkSelections[_model.name]
@@ -94,7 +94,7 @@ class FeatureExtractor():
                                                            penalties=self.penalties, 
                                                            networkInfo=_model))
         
-        if self.config.extractorStyle:
+        if 'extractorStyle' in self.config:
             self.styleExtractors=list()
             for _model in self.config.extractorStyle:
                 _currentInit = NetworkSelections[_model.name]
@@ -131,7 +131,8 @@ class FeatureExtractor():
         styleExtractorSavers=[]
         contentExtractorPaths=[]
         styleExtractorPaths=[]
-        if self.config.extractorContent:
+        #if self.config.extractorContent:
+        if 'extractorContent' in self.config:
             for _model in self.contentExtractors:
                 _realContentLogits, _realContentFeatures, _realFidContentFeature = \
                     _model.NetworkImplementation(inputImg=thisIO.inputs.imgReal, 
@@ -152,7 +153,8 @@ class FeatureExtractor():
                 thisIO.outputs.fakeContentFeatures.append(_fakeContentFeatures)
                 thisIO.outputs.fakeContentFidFeature.append(_realFidContentFeature)
                     
-        if self.config.extractorStyle:   
+        #if self.config.extractorStyle:   
+        if 'extractorStyle' in self.config:
             
             for _model in self.styleExtractors:
                 _realStyleLogits, _realStyleFeatures, _realFidStyleFeature = \

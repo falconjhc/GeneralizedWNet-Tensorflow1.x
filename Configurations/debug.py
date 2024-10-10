@@ -82,29 +82,33 @@ hyperParams = {
         # feature extractor parametrers
         'true_fake_target_extractor_dir': [],
         
-        'content_prototype_extractor_dir':
-        [
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF64_vgg16net/variables/@/device:CPU:0',
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_VGG19-FeatureExtractor_Content_PF64_vgg19net/variables/@/device:CPU:0',
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet18-FeatureExtractor_Content_PF64_resnet18/variables/@/device:CPU:0',
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet34-FeatureExtractor_Content_PF64_resnet34/variables/@/device:CPU:0',
-        # '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet50-FeatureExtractor_Content_PF64_resnet50/variables/@/device:CPU:0',
-        # '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet101-FeatureExtractor_Content_PF64_resnet101/variables/@/device:CPU:0'
-        ],
-        
-        'style_reference_extractor_dir':
-       [
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF80_vgg16net/variables/@/device:CPU:0',
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_VGG19-FeatureExtractor_Content_PF80_vgg19net/variables//@/device:CPU:0',
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_ResNet18-FeatureExtractor_Content_PF80_resnet18/variables/@/device:CPU:0',
-        '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_ResNet34-FeatureExtractor_Content_PF80_resnet34/variables/@/device:CPU:0',
-        # '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_ResNet50-FeatureExtractor_Content_PF80_resnet50/variables/@/device:CPU:0'
-        ]
 #         'content_prototype_extractor_dir':
-#         ['/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF64_vgg16net/variables/@/device:GPU:1'],
+#         [
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF64_vgg16net/variables/@/device:CPU:0',
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_VGG19-FeatureExtractor_Content_PF64_vgg19net/variables/@/device:CPU:0',
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet18-FeatureExtractor_Content_PF64_resnet18/variables/@/device:CPU:0',
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet34-FeatureExtractor_Content_PF64_resnet34/variables/@/device:CPU:0',
+#         # '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet50-FeatureExtractor_Content_PF64_resnet50/variables/@/device:CPU:0',
+#         # '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_ResNet101-FeatureExtractor_Content_PF64_resnet101/variables/@/device:CPU:0'
+#         ],
         
 #         'style_reference_extractor_dir':
-#        ['/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF80_vgg16net/variables/@/device:GPU:1']
+#        [
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF80_vgg16net/variables/@/device:CPU:0',
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_VGG19-FeatureExtractor_Content_PF80_vgg19net/variables//@/device:CPU:0',
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_ResNet18-FeatureExtractor_Content_PF80_resnet18/variables/@/device:CPU:0',
+#         '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_ResNet34-FeatureExtractor_Content_PF80_resnet34/variables/@/device:CPU:0',
+#         # '/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_ResNet50-FeatureExtractor_Content_PF80_resnet50/variables/@/device:CPU:0'
+#         ]
+# #         'content_prototype_extractor_dir':
+# #         ['/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF64/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF64_vgg16net/variables/@/device:GPU:1'],
+        
+# #         'style_reference_extractor_dir':
+# #        ['/data-shared/server02/data1/haochuan/Character/2024-FeatureExtractorDemonstration/PF80/Models/checkpoint/Exp20240308_VGG16-FeatureExtractor_Content_PF80_vgg16net/variables/@/device:GPU:1']
+        
+         'content_prototype_extractor_dir':[],
+        'style_reference_extractor_dir':  []
+        
         
 
 }
@@ -123,7 +127,9 @@ penalties = {
         'Batch_StyleFeature_Discrimination_Penalty':0,
         # 'FeatureExtractorPenalty_ContentPrototype': [0.5,0.1,0.1,0.1,0.1,0.1],
         # 'FeatureExtractorPenalty_StyleReference':[1,0.5,0.5,0.3,0.3],
-        'FeatureExtractorPenalty_ContentPrototype': [1,1,1,1],
-        'FeatureExtractorPenalty_StyleReference':[1,1,1,1],
+        # 'FeatureExtractorPenalty_ContentPrototype': [1,1,1,1],
+        # 'FeatureExtractorPenalty_StyleReference':[1,1,1,1],
+        'FeatureExtractorPenalty_ContentPrototype': [],
+        'FeatureExtractorPenalty_StyleReference':[],
 }
 

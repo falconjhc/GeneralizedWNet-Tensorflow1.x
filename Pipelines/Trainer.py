@@ -13,7 +13,7 @@ import cv2
 
 import sys
 sys.path.append('..')
-from random import choice
+from random import choice,sample
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
@@ -55,6 +55,20 @@ RECORD_TIME=60
 NUM_SAMPLE_PER_EPOCH=1000
 RECORD_PCTG=NUM_SAMPLE_PER_EPOCH/100
 DISP_VALIDATE_IMGS=10
+CONTENT_DISPLAY_NUM=5
+
+
+def NameReplacing(orgExtractorName):
+    replacingDict={'vgg16net': 'VGG16Net',
+                   'vgg19net': 'VGG19Net',
+                   'resnet18': 'ResNet18',
+                  'resnet34': 'ResNet34',
+                  'resnet50': 'ResNet50',
+                  'resnet101': 'ResNet101',
+                  'resnet1152': 'ResNet152'}
+    tmp = replacingDict[orgExtractorName]
+    return tmp
+    
 
 class Trainer(object):
 
@@ -74,6 +88,7 @@ class Trainer(object):
         
         self.config.initializer = 'XavierInit'
         self.accuracy_k=[1,3,5,10,20,50]
+        
         
 
         # self.discriminator = discriminator_dict[self.config.discriminator.name]
@@ -140,15 +155,16 @@ class Trainer(object):
             summary=tf.summary.merge([summary, _thisSummary])
             return summary
         
-        displayLossName={'L1': '01-LossReconstruction/L1-%s',
+        displayLossName={'SumLossG':'01-LossGenerator/SumLossG-%s',
+                         'L1': '01-LossReconstruction/L1-%s',
                          'content': '01-LossReconstruction/DeepPerceptualContentSum-%s',
                          'style': '01-LossReconstruction/DeepPerceptualStyleSum-%s',
                          'mseContent': '011-LossDeepPerceptual-ContentMSE/',
                          'mseStyle': '013-LossDeepPerceptual-StyleMSE/',
                          'vnContent': '012-LossDeepPerceptual-ContentVN/',
                          'vnStyle': '014-LossDeepPerceptual-StyleVN/',
-                         'ConstContent': '01-LossGenerator/ConstContent-%s',
-                         'ConstStyle': '01-LossGenerator/ConstStyle-%s',
+                         'ConstContent': '01-LossGenerator/ConstContentFake-%s',
+                         'ConstStyle': '01-LossGenerator/ConstStyleFake-%s',
                          'CategoryContentOnOrg': '01-LossGenerator/CategoryRealContent-%s',
                          'CategoryContentOnGenerated': '01-LossGenerator/CategoryFakeContent-%s',
                          'CategoryStyleOnOrg': '01-LossGenerator/CategoryRealStyle-%s',
@@ -160,12 +176,12 @@ class Trainer(object):
                          }
         
         trnImages = tf.placeholder(tf.float32, [1, self.config.trainParams.batchSize * self.config.datasetConfig.imgWidth,
-                                                self.config.datasetConfig.imgWidth * (self.config.datasetConfig.displayStyleNum+3+1), 3])
+                                                self.config.datasetConfig.imgWidth * (self.config.datasetConfig.displayStyleNum+3+self.contentDisplayNum), 3])
         valImages = tf.placeholder(tf.float32, [1, self.config.trainParams.batchSize * self.config.datasetConfig.imgWidth,
-                                               self.config.datasetConfig.imgWidth * (self.config.datasetConfig.displayStyleNum+3+1), 3])
+                                               self.config.datasetConfig.imgWidth * (self.config.datasetConfig.displayStyleNum+3+self.contentDisplayNum), 3])
 
-        summaryTrnImgs = tf.summary.image('TrainImages', trnImages)
-        summaryValImgs = tf.summary.image('ValidationImages', valImages)
+        summaryTrnImgs = tf.summary.image('TrainImage', trnImages)
+        summaryValImgs = tf.summary.image('TestImage', valImages)
         summaryLr = tf.summary.scalar('00-LearningRate', lr)
         
         # Losses
@@ -182,26 +198,26 @@ class Trainer(object):
                 for jj in range(len(ioLoss.train.lossFE[ii])):
                     # print(ii+'_'+displayLossName[ii])
                     if 'Content' in ii:
-                        _name=displayLossName[ii]+self.config.extractorContent[jj].name+'-%s'%'Train'
+                        _name=displayLossName[ii]+NameReplacing(self.config.extractorContent[jj].name)+'-%s'%'Train'
                     elif 'Style' in ii:
-                        _name=displayLossName[ii]+self.config.extractorStyle[jj].name+'-%s'%'Train'
+                        _name=displayLossName[ii]+NameReplacing(self.config.extractorStyle[jj].name)+'-%s'%'Train'
                     gLossSummariesTrain=_buildSummary(_name=_name, _value=ioLoss.train.lossFE[ii][jj], summary=gLossSummariesTrain)
         
         
         
         for ii in ioLoss.testOnValidate.lossG: 
-            gLossSummariesValidate=_buildSummary(_name=displayLossName[ii]%'Validate', _value=ioLoss.testOnValidate.lossG[ii], summary=gLossSummariesValidate)
+            gLossSummariesValidate=_buildSummary(_name=displayLossName[ii]%'Test', _value=ioLoss.testOnValidate.lossG[ii], summary=gLossSummariesValidate)
         for ii in ioLoss.testOnValidate.lossFE: 
             if not isinstance(ioLoss.testOnValidate.lossFE[ii],list):
             #if not 'mse' in ii and not 'vn' in ii and not 'fid' in ii:
-                gLossSummariesValidate=_buildSummary(_name=displayLossName[ii]%'Validate', _value=ioLoss.testOnValidate.lossFE[ii], summary=gLossSummariesValidate)
+                gLossSummariesValidate=_buildSummary(_name=displayLossName[ii]%'Test', _value=ioLoss.testOnValidate.lossFE[ii], summary=gLossSummariesValidate)
             else:
                 for jj in range(len(ioLoss.train.lossFE[ii])):
                     #print(ii+'_'+displayLossName[ii])
                     if 'Content' in ii:
-                        _name=displayLossName[ii]+self.config.extractorContent[jj].name+'-%s'%'Validate'
+                        _name=displayLossName[ii]+NameReplacing(self.config.extractorContent[jj].name)+'-%s'%'Test'
                     elif 'Style' in ii:
-                        _name=displayLossName[ii]+self.config.extractorStyle[jj].name+'-%s'%'Validate'
+                        _name=displayLossName[ii]+NameReplacing(self.config.extractorStyle[jj].name)+'-%s'%'Test'
                     gLossSummariesValidate=_buildSummary(_name=_name, _value=ioLoss.testOnValidate.lossFE[ii][jj], summary=gLossSummariesValidate)
         
         
@@ -216,11 +232,11 @@ class Trainer(object):
                                                  _value=ioAcryEtpy.testOnTrain.featureExtractorCategory.accuracy.fakeContent[ii], 
                                                  summary=contentAccuracySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.realContent)):
-            contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Real-'+self.config.extractorContent[ii].name+'-Validate', 
+            contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Real-'+self.config.extractorContent[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.realContent[ii], 
                                                  summary=contentAccuracySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.fakeContent)):
-            contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Fake-'+self.config.extractorContent[ii].name+'-Validate', 
+            contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Fake-'+self.config.extractorContent[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.fakeContent[ii], 
                                                  summary=contentAccuracySummary)
         
@@ -231,10 +247,10 @@ class Trainer(object):
         contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Fake-'+'ContentEncoder'+'-Train', 
                                              _value=ioAcryEtpy.testOnTrain.generatorCategory.accuracy.contentFake, 
                                              summary=contentAccuracySummary)
-        contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Real-'+'ContentEncoder'+'-Validate', 
+        contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Real-'+'ContentEncoder'+'-Test', 
                                              _value=ioAcryEtpy.testOnValidate.generatorCategory.accuracy.contentReal, 
                                              summary=contentAccuracySummary)
-        contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Fake-'+'ContentEncoder'+'-Validate', 
+        contentAccuracySummary=_buildSummary(_name='03-ContentAccuracy/Fake-'+'ContentEncoder'+'-Test', 
                                              _value=ioAcryEtpy.testOnValidate.generatorCategory.accuracy.contentFake, 
                                              summary=contentAccuracySummary)
         
@@ -249,11 +265,11 @@ class Trainer(object):
                                                  _value=ioAcryEtpy.testOnTrain.featureExtractorCategory.accuracy.fakeStyle[ii], 
                                                  summary=styleAccuracySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.realStyle)):
-            styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Real-'+self.config.extractorStyle[ii].name+'-Validate', 
+            styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Real-'+self.config.extractorStyle[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.realStyle[ii], 
                                                  summary=styleAccuracySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.fakeStyle)):
-            styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Fake-'+self.config.extractorStyle[ii].name+'-Validate', 
+            styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Fake-'+self.config.extractorStyle[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.accuracy.fakeStyle[ii], 
                                                  summary=styleAccuracySummary)
         
@@ -264,10 +280,10 @@ class Trainer(object):
         styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Fake-'+'StyleEncoder'+'-Train', 
                                                  _value=ioAcryEtpy.testOnTrain.generatorCategory.accuracy.styleFake, 
                                                  summary=styleAccuracySummary)
-        styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Real-'+'StyleEncoder'+'-Validate', 
+        styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Real-'+'StyleEncoder'+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.generatorCategory.accuracy.styleReal, 
                                                  summary=styleAccuracySummary)
-        styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Fake-'+'StyleEncoder'+'-Validate', 
+        styleAccuracySummary=_buildSummary(_name='03-StyleAccuracy/Fake-'+'StyleEncoder'+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.generatorCategory.accuracy.styleFake, 
                                                  summary=styleAccuracySummary)
             
@@ -285,11 +301,11 @@ class Trainer(object):
                                                  _value=ioAcryEtpy.testOnTrain.featureExtractorCategory.entropy.fakeContent[ii], 
                                                  summary=contentEntropySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.realContent)):
-            contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Real-'+self.config.extractorContent[ii].name+'-Validate', 
+            contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Real-'+self.config.extractorContent[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.realContent[ii], 
                                                  summary=contentEntropySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.fakeContent)):
-            contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Fake-'+self.config.extractorContent[ii].name+'-Validate', 
+            contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Fake-'+self.config.extractorContent[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.fakeContent[ii], 
                                                  summary=contentEntropySummary)
         
@@ -300,10 +316,10 @@ class Trainer(object):
         contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Fake-'+'ContentEncoder'+'-Train', 
                                                  _value=ioAcryEtpy.testOnTrain.generatorCategory.entropy.contentFake, 
                                                  summary=contentEntropySummary)
-        contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Real-'+'ContentEncoder'+'-Validate', 
+        contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Real-'+'ContentEncoder'+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.generatorCategory.entropy.contentReal, 
                                                  summary=contentEntropySummary)
-        contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Fake-'+'ContentEncoder'+'-Validate', 
+        contentEntropySummary=_buildSummary(_name='04-ContentEntropy/Fake-'+'ContentEncoder'+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.generatorCategory.entropy.contentFake, 
                                                  summary=contentEntropySummary)
         
@@ -318,11 +334,11 @@ class Trainer(object):
                                                  _value=ioAcryEtpy.testOnTrain.featureExtractorCategory.entropy.fakeStyle[ii], 
                                                  summary=styleEntropySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.realStyle)):
-            styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Real-'+self.config.extractorStyle[ii].name+'-Validate', 
+            styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Real-'+self.config.extractorStyle[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.realStyle[ii], 
                                                  summary=styleEntropySummary)
         for ii in range(len(ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.fakeStyle)):
-            styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Fake-'+self.config.extractorStyle[ii].name+'-Validate', 
+            styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Fake-'+self.config.extractorStyle[ii].name+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.featureExtractorCategory.entropy.fakeStyle[ii], 
                                                  summary=styleEntropySummary)
         
@@ -333,10 +349,10 @@ class Trainer(object):
         styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Fake-'+'StyleEncoder'+'-Train', 
                                                  _value=ioAcryEtpy.testOnTrain.generatorCategory.entropy.styleFake, 
                                                  summary=styleEntropySummary)
-        styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Real-'+'StyleEncoder'+'-Validate', 
+        styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Real-'+'StyleEncoder'+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.generatorCategory.entropy.styleReal, 
                                                  summary=styleEntropySummary)
-        styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Fake-'+'StyleEncoder'+'-Validate', 
+        styleEntropySummary=_buildSummary(_name='04-StyleEntropy/Fake-'+'StyleEncoder'+'-Test', 
                                                  _value=ioAcryEtpy.testOnValidate.generatorCategory.entropy.styleFake, 
                                                  summary=styleEntropySummary)
         
@@ -346,78 +362,87 @@ class Trainer(object):
         # Full Validation Summaries
         validationContentSummariesRealTrain = []
         validationContentValueRealTrain = []
-        for ii in self.config.extractorContent:
-            _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Real-Train'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationContentSummariesRealTrain.append(_summary)
-            validationContentValueRealTrain.append(_value)
+        
+        if 'extractorContent' in self.config:
+            for ii in self.config.extractorContent:
+                _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Real-Train'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationContentSummariesRealTrain.append(_summary)
+                validationContentValueRealTrain.append(_value)
         
         validationStyleSummariesRealTrain = []
         validationStyleValueRealTrain = []
-        for ii in self.config.extractorStyle:
-            _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Real-Train'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationStyleSummariesRealTrain.append(_summary)
-            validationStyleValueRealTrain.append(_value)
+        if 'extractorStyle' in self.config:
+            for ii in self.config.extractorStyle:
+                _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Real-Train'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationStyleSummariesRealTrain.append(_summary)
+                validationStyleValueRealTrain.append(_value)
         
         
         validationContentSummariesRealValidation = []
         validationContentValueRealValidation = []
-        for ii in self.config.extractorContent:
-            _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Real-Validation'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationContentSummariesRealValidation.append(_summary)
-            validationContentValueRealValidation.append(_value)
+        if 'extractorContent' in self.config:
+            for ii in self.config.extractorContent:
+                _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Real-Validation'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationContentSummariesRealValidation.append(_summary)
+                validationContentValueRealValidation.append(_value)
         
         validationStyleSummariesRealValidation = []
         validationStyleValueRealValidation = []
-        for ii in self.config.extractorStyle:
-            _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Real-Validation'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationStyleSummariesRealValidation.append(_summary)
-            validationStyleValueRealValidation.append(_value)
+        if 'extractorStyle' in self.config:
+            for ii in self.config.extractorStyle:
+                _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Real-Validation'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationStyleSummariesRealValidation.append(_summary)
+                validationStyleValueRealValidation.append(_value)
             
         
         validationContentSummariesFakeTrain = []
         validationContentValueFakeTrain = []
-        for ii in self.config.extractorContent:
-            _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Fake-Train'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationContentSummariesFakeTrain.append(_summary)
-            validationContentValueFakeTrain.append(_value)
+        if 'extractorContent' in self.config:
+            for ii in self.config.extractorContent:
+                _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Fake-Train'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationContentSummariesFakeTrain.append(_summary)
+                validationContentValueFakeTrain.append(_value)
         
         validationStyleSummariesFakeTrain = []
         validationStyleValueFakeTrain = []
-        for ii in self.config.extractorStyle:
-            _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Fake-Train'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationStyleSummariesFakeTrain.append(_summary)
-            validationStyleValueFakeTrain.append(_value)
+        if 'extractorStyle' in self.config:
+            for ii in self.config.extractorStyle:
+                _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Fake-Train'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationStyleSummariesFakeTrain.append(_summary)
+                validationStyleValueFakeTrain.append(_value)
         
         
         validationContentSummariesFakeValidation = []
         validationContentValueFakeValidation = []
-        for ii in self.config.extractorContent:
-            _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Fake-Validation'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationContentSummariesFakeValidation.append(_summary)
-            validationContentValueFakeValidation.append(_value)
+        if 'extractorContent' in self.config:
+            for ii in self.config.extractorContent:
+                _name = '02-TestFullSetAcry-Content/'+ ii.name+'-Fake-Validation'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationContentSummariesFakeValidation.append(_summary)
+                validationContentValueFakeValidation.append(_value)
         
         validationStyleSummariesFakeValidation = []
         validationStyleValueFakeValidation = []
-        for ii in self.config.extractorStyle:
-            _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Fake-Validation'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary=tf.summary.scalar(_name, _value)
-            validationStyleSummariesFakeValidation.append(_summary)
-            validationStyleValueFakeValidation.append(_value)
+        if 'extractorStyle' in self.config:
+            for ii in self.config.extractorStyle:
+                _name = '02-TestFullSetAcry-Style/'+ ii.name+'-Fake-Validation'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary=tf.summary.scalar(_name, _value)
+                validationStyleSummariesFakeValidation.append(_summary)
+                validationStyleValueFakeValidation.append(_value)
             
             
             
@@ -430,31 +455,33 @@ class Trainer(object):
         fidContentTestValue=[]
         fidStyleTrainValue=[]
         fidStyleTestValue=[]
-        for ii in self.config.extractorContent:
-            _name = '02-TestFullSetFID-Content/'+ ii.name+'-Train'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary = tf.summary.scalar(_name, _value)
-            fidContentTrainSummary.append(_summary)
-            fidContentTrainValue.append(_value)
+        if 'extractorContent' in self.config:
+            for ii in self.config.extractorContent:
+                _name = '02-TestFullSetFID-Content/'+ ii.name+'-Train'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary = tf.summary.scalar(_name, _value)
+                fidContentTrainSummary.append(_summary)
+                fidContentTrainValue.append(_value)
+                
+                _name = '02-TestFullSetFID-Content/'+ ii.name+'-Validation'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary = tf.summary.scalar(_name, _value)
+                fidContentTestSummary.append(_summary)
+                fidContentTestValue.append(_value)
             
-            _name = '02-TestFullSetFID-Content/'+ ii.name+'-Validation'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary = tf.summary.scalar(_name, _value)
-            fidContentTestSummary.append(_summary)
-            fidContentTestValue.append(_value)
-            
-        for ii in self.config.extractorStyle:
-            _name = '02-TestFullSetFID-Style/'+ ii.name+'-Train'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary = tf.summary.scalar(_name, _value)
-            fidStyleTrainSummary.append(_summary)
-            fidStyleTrainValue.append(_value)
-            
-            _name = '02-TestFullSetFID-Style/'+ ii.name+'-Validation'
-            _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
-            _summary = tf.summary.scalar(_name, _value)
-            fidStyleTestSummary.append(_summary)
-            fidStyleTestValue.append(_value)
+        if 'extractorStyle' in self.config:
+            for ii in self.config.extractorStyle:
+                _name = '02-TestFullSetFID-Style/'+ ii.name+'-Train'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary = tf.summary.scalar(_name, _value)
+                fidStyleTrainSummary.append(_summary)
+                fidStyleTrainValue.append(_value)
+                
+                _name = '02-TestFullSetFID-Style/'+ ii.name+'-Validation'
+                _value = tf.placeholder(tf.float32, name=_name+'-ValuePH')
+                _summary = tf.summary.scalar(_name, _value)
+                fidStyleTestSummary.append(_summary)
+                fidStyleTestValue.append(_value)
     
             
         # Full Validation on the Generator Encoders
@@ -655,6 +682,7 @@ class Trainer(object):
 
         # define the data set 准备数据
         data_provider = DataProvider(config=self.config)
+        self.contentDisplayNum = min(CONTENT_DISPLAY_NUM, len(data_provider.content_label0_vec))
 
 
         if self.config.datasetConfig.loadedLabel1Vec == -1:
@@ -665,8 +693,8 @@ class Trainer(object):
         self.content_input_num = data_provider.content_input_num
         # self.display_style_reference_num = np.min([display_style_reference_num, self.config.datasetConfig.inputStyleNum])
         
-        self.content_input_number_actual = self.content_input_num
-        self.display_content_reference_num = np.min([4, self.content_input_number_actual])
+        # self.content_input_number_actual = self.content_input_num
+        # self.display_content_reference_num = np.min([4, self.content_input_number_actual])
 
         # ignore
         delete_items=list()
@@ -708,9 +736,9 @@ class Trainer(object):
         generator.io.train, generator.savers, generator.trainVars, generator.path =\
             generatorBuider.BuildGenerator(isTraining=True, saveEpochs=model_save_epochs) # Build the training graph
         generator.io.testOnTrain, _,_,_=\
-            generatorBuider.BuildGenerator(isTraining=False, validateOn='Trainset') # build the generator graph to validate the model on the train set
+            generatorBuider.BuildGenerator(isTraining=False, validateOn='Trainset') # build the generator graph to test the model on the train set
         generator.io.testOnValidate, _, _,_=\
-            generatorBuider.BuildGenerator(isTraining=False, validateOn='Validateset') # build the generator graph to validate the model on the validate set
+            generatorBuider.BuildGenerator(isTraining=False, validateOn='Validateset') # build the generator graph to test the model on the validate set
         print(self.print_separater)
         
         # register the feature extractor 构建特征提取
@@ -814,15 +842,18 @@ class Trainer(object):
                                                                             self.penalties.Discriminative_Penalty,
                                                                             self.penalties.Discriminator_Gradient_Penalty,
                                                                             self.penalties.discriminator_weight_decay_penalty))
-        print("Penalties of ContentFeatureExtractors: ", end='')
-        for ii in self.config.extractorContent:
-            print(ii.name+', ', end='')
-        print(self.penalties.FeatureExtractorPenalty_ContentPrototype)
+        
+        if 'extractorContent' in self.config:
+            print("Penalties of ContentFeatureExtractors: ", end='')
+            for ii in self.config.extractorContent:
+                print(ii.name+', ', end='')
+            print(self.penalties.FeatureExtractorPenalty_ContentPrototype)
         # print(self.print_separater)
-        print("Penalties of StyleFeatureExtractor: ", end='')
-        for ii in self.config.extractorStyle:
-            print(ii.name+', ', end='')
-        print(self.penalties.FeatureExtractorPenalty_StyleReference)
+        if 'extractorStyle' in self.config:
+            print("Penalties of StyleFeatureExtractor: ", end='')
+            for ii in self.config.extractorStyle:
+                print(ii.name+', ', end='')
+            print(self.penalties.FeatureExtractorPenalty_StyleReference)
         
 
         print("InitLearningRate:%.10f" % self.config.trainParams.initLr)
@@ -876,13 +907,13 @@ class Trainer(object):
                 print("Image Saved @ %s" % saveNamePath)    
                 print(self.print_separater)
                 
-                if not self.config.userInterface.skipTest:
-                    self.ValidateOneEpoch(inputIO=accuracyEntropy.testOnValidate,  iter_num=valItrs, print_info="Test@Val-Ep:%d" % (ei), 
-                                          progress_info='NA', summaryOp=fullValidationValidateSummaries, 
-                                          summaryWriter=summary_writer, ei=epoch_step, evalFID=True)
-                    self.ValidateOneEpoch(inputIO=accuracyEntropy.testOnTrain,  iter_num=trainItrs, print_info="Test@Trns-Ep:%d" % (ei), 
-                                          progress_info='NA', summaryOp=fullValidationTrainSummaries, 
-                                          summaryWriter=summary_writer, ei=epoch_step, evalFID=True)
+                # if not self.config.userInterface.skipTest:
+                #     self.ValidateOneEpoch(inputIO=accuracyEntropy.testOnValidate,  iter_num=valItrs, print_info="Test@Val-Ep:%d" % (ei), 
+                #                           progress_info='NA', summaryOp=fullValidationValidateSummaries, 
+                #                           summaryWriter=summary_writer, ei=epoch_step, evalFID=False)
+                #     self.ValidateOneEpoch(inputIO=accuracyEntropy.testOnTrain,  iter_num=trainItrs, print_info="Test@Trns-Ep:%d" % (ei), 
+                #                           progress_info='NA', summaryOp=fullValidationTrainSummaries, 
+                #                           summaryWriter=summary_writer, ei=epoch_step, evalFID=False)
                     
                 
             
@@ -924,12 +955,13 @@ class Trainer(object):
             self.SaveModel(saver=saver_frameworks, model_dir=os.path.join(self.config.userInterface.expDir, 'Framework'),
                            global_step=global_step, model_name='Framework')
             
+            
             if not self.config.userInterface.skipTest:
                 if (ei+1)%10==0 or ei==training_epoch_list[-1]:
                     evalFid=True
                 else:
                     evalFid=False
-                # evalFid=False
+                evalFid=False
                 if ((ei+1) % 5 == 0 or (ei+1) <= 5):
                     self.ValidateOneEpoch(inputIO=accuracyEntropy.testOnTrain,  iter_num=trainItrs, print_info="Test@Trn-Ep:%d" % (ei+1), 
                                         progress_info=progress_info, summaryOp=fullValidationTrainSummaries, summaryWriter=summary_writer, ei=epoch_step, evalFID=evalFid)
@@ -1020,23 +1052,47 @@ class Trainer(object):
     def GenerateTensorboardImage(self, generatorIO):
         
         # train mode
-        styles, reals, fakes, content = \
+        styles, reals, fakes, contents = \
             self.sess.run([generatorIO.inputs.displayStyles,
                            generatorIO.groundtruths.trueCharacter,
                            generatorIO.outputs.generated,
                            generatorIO.inputs.contents[0]])
             
         #contents = scale_back_for_img(images=contents[0])
-        selectedContentIdx=choice(list(range(content.shape[-1])))
-        content=np.expand_dims(content[:,:,:,selectedContentIdx], axis=-1)
-        reals = scale_back_for_img(images=reals)
-        fakes = scale_back_for_img(images=fakes)
+        
+        if self.contentDisplayNum == contents.shape[-1]:
+            displayContents = contents
+            
+        else:
+            selectedContentIdx=sample(list(range(contents.shape[-1])),self.contentDisplayNum)
+            for (ii, idx) in enumerate(selectedContentIdx):
+                _thisContent = np.expand_dims(contents[:,:,:,idx], axis=-1)
+                if ii == 0:
+                    contentOut = _thisContent
+                else:
+                    contentOut=np.concatenate([contentOut, _thisContent], axis=-1)
+            displayContents=contentOut
+            
+        for ii in range(displayContents.shape[-1]):
+            _thisContent = scale_back_for_img(np.expand_dims(displayContents[:,:,:,ii], axis=-1))
+            if ii == 0:
+                contentOut = _thisContent
+            else:
+                contentOut=np.concatenate([contentOut, _thisContent], axis=3)
+        displayContents = contentOut
         
         
-        content = scale_back_for_img(images=content)
+        for ii in range(displayContents.shape[-1]):
+            thisContent = merge(np.expand_dims(displayContents[:,:,:,ii], axis=3), [self.config.trainParams.batchSize,1])
+            if ii ==0: 
+                newContent=thisContent
+            else: 
+                newContent=np.concatenate([newContent, thisContent], axis=1)
+        displayContents=newContent
         
         
         
+        #################
         for ii in range(len(styles)):
             _thisStyle=scale_back_for_img(images=styles[ii])
             if ii == 0:
@@ -1044,12 +1100,6 @@ class Trainer(object):
             else:
                 styleOut=np.concatenate([styleOut, _thisStyle], axis=3)
         styles=styleOut
-            
-        reals=merge(reals, [self.config.trainParams.batchSize,1])
-        fakes=merge(fakes, [self.config.trainParams.batchSize,1])
-        content=merge(content, [self.config.trainParams.batchSize,1])
-        difference = scale_back_for_dif(reals-fakes)
-        
         
         for ii in range(styles.shape[-1]):
             thisStyle = merge(np.expand_dims(styles[:,:,:,ii], axis=3), [self.config.trainParams.batchSize,1])
@@ -1058,8 +1108,31 @@ class Trainer(object):
             else: 
                 newStyle=np.concatenate([newStyle, thisStyle], axis=1)
         styles=newStyle
+        
+        
+        
+        
+        # selectedContentIdx=sample(list(range(contents[0].shape[-1])),self.contentDisplayNum)
+        # content=np.expand_dims(contents[:,:,:,selectedContentIdx], axis=-1)
+        reals = scale_back_for_img(images=reals)
+        fakes = scale_back_for_img(images=fakes)
+        
+        
+        # contents = scale_back_for_img(images=contents)
+        
+        
+        
+        
+            
+        reals=merge(reals, [self.config.trainParams.batchSize,1])
+        fakes=merge(fakes, [self.config.trainParams.batchSize,1])
+        #contents=merge(displayContents, [self.config.trainParams.batchSize,1])
+        difference = scale_back_for_dif(reals-fakes)
+        
+        
+       
         #dispImg = np.expand_dims(np.concatenate([contents, fakes, difference, reals, styles], axis=1), axis=0)
-        dispImg = np.expand_dims(np.concatenate([styles,reals,fakes, difference, content], axis=1), axis=0)
+        dispImg = np.expand_dims(np.concatenate([styles,reals, difference, fakes, displayContents], axis=1), axis=0)
         return dispImg
             
         

@@ -6,8 +6,8 @@ dataPathRoot = '/data0/haochuan/'
 hyperParams = {
         'seed':1,
         'debugMode': 0,
-        'expID':'20240610-ContentPF64-StylePF50',# experiment name prefix
-        'expDir': '/data-shared/server02/data1/haochuan/Character/TrainRecords-TestArchitecture-OldAugument-202406/',
+        'expID':'20240724-ContentPF64-StylePF50',# experiment name prefix
+        'expDir': '/data-shared/server02/data1/haochuan/Character/TrainRecords-202407/',
         
 
 
@@ -44,10 +44,10 @@ hyperParams = {
         'trainAugmentContentTranslation':1,
         'trainAugmentContentRotation':1,
         'trainAugmentContentFlip':1,
-        'trainAugmentStyleTranslation':0,
-        'trainAugmentStyleRotation':0,
-        'trainAugmentStyleFlip':0,
-        'trainSplitContentStyleAugmentation': 0,
+        'trainAugmentStyleTranslation':1,
+        'trainAugmentStyleRotation':1,
+        'trainAugmentStyleFlip':1,
+        'trainSplitContentStyleAugmentation': 1,
 
         'testAugmentContentTranslation':0,
         'testAugmentContentRotation':0,
